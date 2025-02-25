@@ -244,9 +244,17 @@ function getNodeColorByLabel(label) {
 // Función para obtener el color del nodo padre
 function getParentNodeColor(selectedNodeId) {
     const parentNode = nodes.get(selectedNodeId);
-    if (!parentNode) return null;
+    if (!parentNode) return { background: '#ffffff', border: '#ffffff' };
     
-    // Obtener el primer dígito del label del nodo padre
+    // Si el nodo padre tiene un color definido, lo usamos
+    if (parentNode.color) {
+        return {
+            background: parentNode.color.background,
+            border: parentNode.color.border
+        };
+    }
+    
+    // Si no tiene color, usamos el sistema basado en el label como fallback
     const parentBaseNumber = parentNode.label.charAt(0);
     const colors = {
         '0': { background: '#ffffff', border: '#ffffff' }, // Blanco
@@ -256,6 +264,22 @@ function getParentNodeColor(selectedNodeId) {
         '4': { background: '#9e9e9e', border: '#757575' }  // Gris
     };
     return colors[parentBaseNumber] || { background: '#ffffff', border: '#ffffff' };
+}
+
+// Función para generar un ID único
+function generateUniqueId() {
+    const allNodes = nodes.get();
+    let maxId = -1;
+    
+    // Encontrar el máximo ID numérico actual
+    allNodes.forEach(node => {
+        const idNum = parseInt(node.id.replace('n', ''));
+        if (!isNaN(idNum) && idNum > maxId) {
+            maxId = idNum;
+        }
+    });
+    
+    return 'n' + (maxId + 1);
 }
 
 // Función para crear una nueva conexión
@@ -276,8 +300,7 @@ function createNewConnection() {
         if (existingNode) {
             targetNodeId = existingNode.id;
         } else {
-            const allNodes = nodes.get();
-            const newId = 'n' + allNodes.length;
+            const newId = generateUniqueId();
             
             const newNode = {
                 id: newId,
