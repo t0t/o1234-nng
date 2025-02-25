@@ -1,10 +1,10 @@
 // Configuración inicial de la red
 const nodes = new vis.DataSet([
-    { id: 'n0', label: '0', x: -100, y: 0 },
-    { id: 'n1', label: '1', x: 0, y: 0, fixed: true },
-    { id: 'n2', label: '2', x: 100, y: 100 },
-    { id: 'n3', label: '3', x: 0, y: -100 },
-    { id: 'n4', label: '4', x: 200, y: 0 }
+    { id: 'n0', label: '0', x: -100, y: 0, color: { background: '#ffffff', border: '#ffffff' }, font: { color: '#000000' } },
+    { id: 'n1', label: '1', x: 0, y: 0, fixed: true, color: { background: '#ffeb3b', border: '#fdd835' }, font: { color: '#000000' } },
+    { id: 'n2', label: '2', x: 100, y: 100, color: { background: '#e91e63', border: '#d81b60' }, font: { color: '#000000' } },
+    { id: 'n3', label: '3', x: 0, y: -100, color: { background: '#2196f3', border: '#1e88e5' }, font: { color: '#000000' } },
+    { id: 'n4', label: '4', x: 200, y: 0, color: { background: '#9e9e9e', border: '#757575' }, font: { color: '#000000' } }
 ]);
 
 const edges = new vis.DataSet([
@@ -31,8 +31,9 @@ const options = {
         shape: 'circle',
         size: 30,
         font: {
-            size: 20,
-            color: '#ffffff'
+            size: 16,
+            color: '#000000',
+            face: 'arial'
         },
         borderWidth: 2,
         borderWidthSelected: 4,
@@ -223,6 +224,35 @@ function findNodeByLabel(label) {
     return allNodes.find(node => node.label === label);
 }
 
+// Función para obtener el color según el label
+function getNodeColorByLabel(label) {
+    const colors = {
+        '0': { background: '#ffffff', border: '#ffffff' }, // Blanco
+        '1': { background: '#ffeb3b', border: '#fdd835' }, // Amarillo
+        '2': { background: '#e91e63', border: '#d81b60' }, // Magenta
+        '3': { background: '#2196f3', border: '#1e88e5' }, // Azul
+        '4': { background: '#9e9e9e', border: '#757575' }  // Gris
+    };
+    return colors[label] || { background: '#ffffff', border: '#ffffff' }; // Default a blanco
+}
+
+// Función para obtener el color del nodo padre
+function getParentNodeColor(selectedNodeId) {
+    const parentNode = nodes.get(selectedNodeId);
+    if (!parentNode) return null;
+    
+    // Obtener el primer dígito del label del nodo padre
+    const parentBaseNumber = parentNode.label.charAt(0);
+    const colors = {
+        '0': { background: '#ffffff', border: '#ffffff' }, // Blanco
+        '1': { background: '#ffeb3b', border: '#fdd835' }, // Amarillo
+        '2': { background: '#e91e63', border: '#d81b60' }, // Magenta
+        '3': { background: '#2196f3', border: '#1e88e5' }, // Azul
+        '4': { background: '#9e9e9e', border: '#757575' }  // Gris
+    };
+    return colors[parentBaseNumber] || { background: '#ffffff', border: '#ffffff' };
+}
+
 // Función para crear una nueva conexión
 function createNewConnection() {
     const selectedId = selectedNode;
@@ -238,21 +268,22 @@ function createNewConnection() {
         const existingNode = findNodeByLabel(newNodeName);
         
         if (existingNode) {
-            // Si el nodo existe, usamos su ID
             targetNodeId = existingNode.id;
         } else {
-            // Si el nodo no existe, lo creamos con un ID único
             const allNodes = nodes.get();
             const newId = 'n' + allNodes.length;
+            const parentColor = getParentNodeColor(selectedId);
+            
             const newNode = {
                 id: newId,
-                label: newNodeName
+                label: newNodeName,
+                color: parentColor,
+                font: { color: '#000000' }
             };
             nodes.add(newNode);
             targetNodeId = newId;
         }
 
-        // Crear la conexión usando el DataSet de edges
         const newEdge = {
             from: selectedId,
             to: targetNodeId,
@@ -260,11 +291,7 @@ function createNewConnection() {
         };
         
         edges.add(newEdge);
-        
-        // Actualizar la visualización
         network.fit();
-        
-        // Limpiar el input
         newNodeNameInput.value = '';
         
     } catch (error) {
