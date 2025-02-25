@@ -83,6 +83,10 @@ npm run dev
 
 ## Puntos de Restauración
 - `a6a809e`: Sistema completo funcionando, sin botón "Nuevo" (25/02/2025)
+- `7b2de63`: Sistema de grupos y colores implementado correctamente (25/02/2025)
+  * Los nodos heredan el color de su grupo padre
+  * Nodos independientes pertenecen al grupo 3 (azul)
+  * Grupos definidos por colores: blanco, amarillo, magenta, azul, gris
 
 ## 🤝 Contribuir
 
