@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>o1234-NNG: Generador de Redes Neuronales de Palabras</title>
+    <link rel="stylesheet" href="/src/styles/main.css">
+    <!-- vis.js Network -->
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Panel de Control -->
+        <nav class="control-panel">
+            <div class="logo">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Nodos -->
+                    <text x="50" y="50" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="18">1</text>
+                    <text x="20" y="50" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="18">0</text>
+                    <text x="80" y="50" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="18">4</text>
+                    <text x="50" y="20" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="18">3</text>
+                    <text x="50" y="80" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="18">2</text>
+                    
+                    <!-- Conexiones -->
+                    <path d="M 50 20 Q 35 35, 20 50" stroke="white" fill="none" stroke-width="2"/>
+                    <path d="M 50 20 Q 65 35, 80 50" stroke="white" fill="none" stroke-width="2"/>
+                    <path d="M 20 50 Q 35 50, 50 50" stroke="white" fill="none" stroke-width="2"/>
+                    <path d="M 50 50 Q 65 50, 80 50" stroke="white" fill="none" stroke-width="2"/>
+                    <path d="M 20 50 Q 35 65, 50 80" stroke="white" fill="none" stroke-width="2"/>
+                    <path d="M 80 50 Q 65 65, 50 80" stroke="white" fill="none" stroke-width="2"/>
+                </svg>
+            </div>
+            <button class="btn" id="exportBtn">Exportar</button>
+            <button class="btn" id="helpBtn">Ayuda</button>
+        </nav>
+
+        <!-- Contenedor Principal de la Red -->
+        <main class="network-container" id="network"></main>
+
+        <!-- Panel Contextual (inicialmente oculto) -->
+        <aside class="context-panel hidden" id="contextPanel">
+            <h3 class="context-title">Nodo: <span id="selectedNode">-</span></h3>
+            <div class="context-content">
+                <div class="form-group">
+                    <label for="nodeName">Nombre del nodo:</label>
+                    <input type="text" id="nodeName" class="input">
+                </div>
+                <div class="form-group">
+                    <label for="edgeWeight">Peso de conexión:</label>
+                    <input type="range" id="edgeWeight" min="0" max="1" step="0.1" class="slider">
+                    <span id="weightValue">0.5</span>
+                </div>
+                <div class="form-group">
+                    <label for="newNodeName">Conectar con nuevo nodo:</label>
+                    <input type="text" id="newNodeName" class="input">
+                </div>
+                <div class="button-group">
+                    <button class="btn" id="createConnectionBtn">Crear Conexión</button>
+                    <button class="btn btn-danger" id="deleteNodeBtn">Eliminar Nodo</button>
+                </div>
+            </div>
+        </aside>
+    </div>
+    <script type="module" src="/src/js/main.js"></script>
+</body>
+</html>

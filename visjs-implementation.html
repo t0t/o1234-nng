@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>o1234-NNG: Generador de Redes Neuronales de Palabras con vis.js</title>
+    
+    <!-- Importar vis.js desde CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css">
+    
+    <style>
+        :root {
+            --background-color: #121212;
+            --panel-color: #2a2a2a;
+            --border-color: #495057;
+            --text-color: #e9ecef;
+            --secondary-text: #adb5bd;
+            --accent-color: #0d6efd;
+            --delete-color: #dc3545;
+            --node-color: #2a2a2a;
+            --node-border: #adb5bd;
+            --selected-node: #0d6efd;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        #mynetwork {
+            flex-grow: 1;
+            height: 100%;
+            border: none;
+        }
+        
+        /* Panel lateral */
+        .side-panel {
+            width: 160px;
+            background-color: var(--panel-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 10;
+        }
+        
+        /* Logo */
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .logo-svg {
+            width: 70px;
+            height: 70px;
+            margin-bottom: 10px;
+        }
+        
+        .app-name {
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        /* Botones del panel */
+        .panel-button {
+            display: block;
+            width: 100%;
+            padding: 8px 0;
+            background-color: var(--border-color);
+            color: var(--text-color);
+            text-align: center;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .panel-button:hover {
+            background-color: #343a40;
+        }
+        
+        /* Panel contextual */
+        #contextual-panel {
+            position: absolute;
+            display: none;
+            width: 180px;
+            background-color: var(--panel-color);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+        
+        .context-title {
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .input-group {
+            margin-bottom: 12px;
+        }
+        
+        .input-label {
+            display: block;
+            color: var(--secondary-text);
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+        
+        .text-input {
+            width: 100%;
+            padding: 6px;
+            background-color: #343a40;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        
+        .weight-slider {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        
+        .weight-value {
+            text-align: center;
+            color: var(--secondary-text);
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        
+        .create-btn {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .delete-btn {
+            background-color: var(--delete-color);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Panel lateral -->
+    <div class="side-panel">
+        <div class="logo-container">
+            <svg class="logo-svg" viewBox="0 0 70 70">
+                <circle cx="35" cy="35" r="30" fill="none" stroke="#adb5bd" stroke-width="1.5" />
+                <text x="35" y="25" fill="#e9ecef" font-size="10" text-anchor="middle">3</text>
+                <text x="20" y="40" fill="#e9ecef" font-size="10" text-anchor="middle">0</text>
+                <text x="35" y="40" fill="#e9ecef" font-size="10" text-anchor="middle">1</text>
+                <text x="50" y="40" fill="#e9ecef" font-size="10" text-anchor="middle">4</text>
+                <text x="35" y="55" fill="#e9ecef" font-size="10" text-anchor="middle">2</text>
+                <path d="M 20,40 L 35,40 L 50,40" stroke="#adb5bd" stroke-width="1" fill="none" />
+                <path d="M 35,25 L 35,40 L 35,55" stroke="#adb5bd" stroke-width="1" fill="none" />
+                <path d="M 20,40 Q 27.5,32.5 35,25" stroke="#adb5bd" stroke-width="1" fill="none" />
+                <path d="M 35,25 Q 42.5,32.5 50,40" stroke="#adb5bd" stroke-width="1" fill="none" />
+                <path d="M 20,40 Q 27.5,47.5 35,55" stroke="#adb5bd" stroke-width="1" fill="none" />
+                <path d="M 35,55 Q 42.5,47.5 50,40" stroke="#adb5bd" stroke-width="1" fill="none" />
+            </svg>
+            <div class="app-name">o1234-NNG</div>
+        </div>
+        
+        <button id="export-btn" class="panel-button">Exportar</button>
+        <button id="help-btn" class="panel-button">Ayuda</button>
+    </div>
+    
+    <!-- Contenedor principal para la red -->
+    <div id="mynetwork"></div>
+    
+    <!-- Panel contextual (aparece al hacer clic en un nodo) -->
+    <div id="contextual-panel">
+        <div id="node-title" class="context-title">Nodo 1</div>
+        
+        <div class="input-group">
+            <label class="input-label">Editar nombre:</label>
+            <input type="text" id="node-label" class="text-input" value="Concepto">
+        </div>
+        
+        <div class="input-group">
+            <label class="input-label">Peso de conexión:</label>
+            <input type="range" id="weight-slider" class="weight-slider" min="0" max="1" step="0.01" value="0.5">
+            <div class="weight-value" id="weight-value">0.50</div>
+        </div>
+        
+        <div class="input-group">
+            <label class="input-label">Conectar con:</label>
+            <input type="text" id="connect-to" class="text-input" placeholder="Nuevo nodo">
+        </div>
+        
+        <button id="create-connection" class="panel-button create-btn">Crear conexión</button>
+        <button id="delete-node" class="panel-button delete-btn">Eliminar nodo</button>
+    </div>
+
+    <script>
+        // Configuración para vis.js
+        const nodeColor = "#2a2a2a";
+        const nodeBorder = "#adb5bd";
+        const selectedColor = "#0d6efd";
+        
+        // Crear nodos
+        const nodes = new vis.DataSet([
+            { id: 0, label: "0", x: 0, y: 0 },
+            { id: 1, label: "1", x: 200, y: 0 },
+            { id: 2, label: "2", x: 200, y: 200 },
+            { id: 3, label: "3", x: 200, y: -200 },
+            { id: 4, label: "4", x: 400, y: 0 }
+        ]);
+        
+        // Crear conexiones
+        const edges = new vis.DataSet([
+            { from: 0, to: 1, value: 0.65, title: "0.65" },
+            { from: 1, to: 4, value: 0.55, title: "0.55" },
+            { from: 3, to: 1, value: 0.8, title: "0.80" },
+            { from: 1, to: 2, value: 0.7, title: "0.70" },
+            { from: 0, to: 3, value: 0.45, title: "0.45" },
+            { from: 0, to: 2, value: 0.4, title: "0.40" },
+            { from: 3, to: 4, value: 0.5, title: "0.50" },
+            { from: 2, to: 4, value: 0.35, title: "0.35" }
+        ]);
+        
+        // Crear el contenedor para la red
+        const container = document.getElementById("mynetwork");
+        
+        // Opciones de configuración
+        const options = {
+            nodes: {
+                shape: "circle",
+                size: 40,
+                font: {
+                    size: 24,
+                    color: "#e9ecef",
+                    face: "sans-serif",
+                    bold: true
+                },
+                borderWidth: 2,
+                color: {
+                    border: nodeBorder,
+                    background: nodeColor,
+                    highlight: {
+                        border: selectedColor,
+                        background: nodeColor
+                    }
+                }
+            },
+            edges: {
+                width: function(edge) {
+                    return 1 + (edge.value * 3);
+                },
+                color: {
+                    color: "#6c757d",
+                    opacity: function(edge) {
+                        return 0.3 + (edge.value * 0.5);
+                    },
+                    highlight: "#0d6efd"
+                },
+                smooth: {
+                    type: "continuous",
+                    roundness: 0.2
+                },
+                font: {
+                    color: "#adb5bd",
+                    size: 12
+                },
+                selectionWidth: 2
+            },
+            physics: {
+                enabled: true,
+                barnesHut: {
+                    gravitationalConstant: -2000,
+                    centralGravity: 0.1,
+                    springLength: 150,
+                    springConstant: 0.05,
+                    damping: 0.09
+                },
+                stabilization: {
+                    enabled: true,
+                    iterations: 1000,
+                    updateInterval: 100
+                }
+            },
+            interaction: {
+                dragNodes: true,
+                selectConnectedEdges: true,
+                hoverConnectedEdges: true
+            }
+        };
+        
+        // Inicializar la red
+        const network = new vis.Network(container, { nodes, edges }, options);
+        
+        // Variables para el panel contextual
+        let selectedNode = null;
+        const contextPanel = document.getElementById("contextual-panel");
+        const nodeTitle = document.getElementById("node-title");
+        const nodeLabel = document.getElementById("node-label");
+        const weightSlider = document.getElementById("weight-slider");
+        const weightValue = document.getElementById("weight-value");
+        const connectTo = document.getElementById("connect-to");
+        
+        // Mostrar panel contextual al seleccionar un nodo
+        network.on("click", function(params) {
+            // Si se hizo clic en un nodo
+            if (params.nodes.length > 0) {
+                selectedNode = params.nodes[0];
+                const nodeData = nodes.get(selectedNode);
+                const nodePosition = network.getPositions([selectedNode])[selectedNode];
+                const canvasPosition = network.canvasToDOM(nodePosition);
+                
+                // Actualizar contenido del panel
+                nodeTitle.textContent = `Nodo ${nodeData.id}`;
+                nodeLabel.value = nodeData.label || nodeData.id.toString();
+                
+                // Posicionar el panel contextual
+                contextPanel.style.left = `${canvasPosition.x + 60}px`;
+                contextPanel.style.top = `${canvasPosition.y - 120}px`;
+                contextPanel.style.display = "block";
+            } else {
+                // Si se hizo clic en el fondo
+                contextPanel.style.display = "none";
+                selectedNode = null;
+            }
+        });
+        
+        // Actualizar etiqueta del nodo
+        nodeLabel.addEventListener("change", function() {
+            if (selectedNode !== null) {
+                nodes.update({ id: selectedNode, label: this.value });
+            }
+        });
+        
+        // Actualizar valor del slider de peso
+        weightSlider.addEventListener("input", function() {
+            weightValue.textContent = parseFloat(this.value).toFixed(2);
+        });
+        
+        // Crear conexión
+        document.getElementById("create-connection").addEventListener("click", function() {
+            if (selectedNode === null) return;
+            
+            const targetNodeLabel = connectTo.value.trim();
+            if (!targetNodeLabel) return;
+            
+            // Buscar si ya existe un nodo con esa etiqueta
+            let targetNodeId = null;
+            const allNodes = nodes.get();
+            for (const node of allNodes) {
+                if (node.label.toLowerCase() === targetNodeLabel.toLowerCase()) {
+                    targetNodeId = node.id;
+                    break;
+                }
+            }
+            
+            // Si no existe, crear un nuevo nodo
+            if (targetNodeId === null) {
+                targetNodeId = Math.max(...allNodes.map(n => n.id)) + 1;
+                
+                // Calcular posición para el nuevo nodo
+                const selectedPos = network.getPositions([selectedNode])[selectedNode];
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 150;
+                const x = selectedPos.x + Math.cos(angle) * distance;
+                const y = selectedPos.y + Math.sin(angle) * distance;
+                
+                nodes.add({
+                    id: targetNodeId,
+                    label: targetNodeLabel,
+                    x: x,
+                    y: y
+                });
+            }
+            
+            // Verificar si ya existe la conexión
+            const existingEdges = edges.get({
+                filter: function(edge) {
+                    return (edge.from === selectedNode && edge.to === targetNodeId) ||
+                           (edge.from === targetNodeId && edge.to === selectedNode);
+                }
+            });
+            
+            // Si no existe, crear la conexión
+            if (existingEdges.length === 0) {
+                const weight = parseFloat(weightSlider.value);
+                edges.add({
+                    from: selectedNode,
+                    to: targetNodeId,
+                    value: weight,
+                    title: weight.toFixed(2)
+                });
+            }
+            
+            // Limpiar el campo de texto
+            connectTo.value = "";
+        });
+        
+        // Eliminar nodo
+        document.getElementById("delete-node").addEventListener("click", function() {
+            if (selectedNode !== null) {
+                nodes.remove(selectedNode);
+                contextPanel.style.display = "none";
+                selectedNode = null;
+            }
+        });
+        
+        // Exportar como imagen
+        document.getElementById("export-btn").addEventListener("click", function() {
+            const canvas = network.canvas.frame.canvas;
+            const dataURL = canvas.toDataURL("image/png");
+            
+            const downloadLink = document.createElement("a");
+            downloadLink.href = dataURL;
+            downloadLink.download = "o1234-NNG-network.png";
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        });
+        
+        // Mostrar ayuda
+        document.getElementById("help-btn").addEventListener("click", function() {
+            alert(`o1234-NNG: Generador de Redes Neuronales de Palabras
+
+Instrucciones:
+1. Haz clic en un nodo para seleccionarlo y editar sus propiedades
+2. Edita el nombre del nodo desde el panel contextual
+3. Para crear una conexión, escribe el nombre del nodo destino y ajusta el peso
+4. Arrastra los nodos para reorganizar la red
+5. Usa el botón "Exportar" para guardar la red como imagen
+
+Desarrollado con vis.js`);
+        });
+        
+        // Cerrar panel al hacer clic fuera de la red
+        document.addEventListener("click", function(e) {
+            if (!contextPanel.contains(e.target) && e.target.closest("#mynetwork") === null) {
+                contextPanel.style.display = "none";
+                selectedNode = null;
+            }
+        });
+    </script>
+</body>
+</html>
