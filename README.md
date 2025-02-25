@@ -78,6 +78,12 @@ npm run dev
   - Área principal para el lienzo
   - Panel contextual para nodos seleccionados
 
+## Screenshot
+![Neural Network Graph](screenshot-nng.png)
+
+## Puntos de Restauración
+- `a6a809e`: Sistema completo funcionando, sin botón "Nuevo" (25/02/2025)
+
 ## 🤝 Contribuir
 
 Las contribuciones son bienvenidas. Por favor:
