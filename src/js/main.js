@@ -162,39 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Exportar la red como imagen
     if (exportBtn) {
-        exportBtn.onclick = function() {
-            const networkContainer = document.getElementById('network');
-            if (!networkContainer) {
-                console.error('Container de red no encontrado');
-                return;
-            }
-
-            const canvas = networkContainer.querySelector('canvas');
-            if (!canvas) {
-                console.error('Canvas no encontrado');
-                return;
-            }
-
-            try {
-                // Asegurar que la red está ajustada y renderizada
-                network.stabilize();
-                network.fit();
-
-                // Esperar un momento para que la red se estabilice
-                setTimeout(() => {
-                    const imageURL = canvas.toDataURL('image/png');
-                    const downloadLink = document.createElement('a');
-                    downloadLink.href = imageURL;
-                    downloadLink.download = 'red-neuronal.png';
-                    document.body.appendChild(downloadLink);
-                    downloadLink.click();
-                    document.body.removeChild(downloadLink);
-                }, 500);
-            } catch (error) {
-                console.error('Error al exportar:', error);
-                alert('Error al exportar la imagen. Por favor, intenta de nuevo.');
-            }
-        };
+        exportBtn.onclick = exportGraphAsSVG;
     }
 
     // Mostrar ayuda
@@ -385,4 +353,94 @@ edges.on('*', saveNetworkState);
 const newGraphBtn = document.getElementById('newGraphBtn');
 if (newGraphBtn) {
     newGraphBtn.addEventListener('click', createNewGraph);
+}
+
+// Función para exportar el gráfico como SVG
+function exportGraphAsSVG() {
+    try {
+        // Obtener las posiciones actuales de los nodos
+        const positions = network.getPositions();
+        const allNodes = nodes.get();
+        const allEdges = edges.get();
+        
+        // Calcular los límites del gráfico
+        let minX = Infinity, maxX = -Infinity;
+        let minY = Infinity, maxY = -Infinity;
+        
+        allNodes.forEach(node => {
+            const pos = positions[node.id];
+            minX = Math.min(minX, pos.x);
+            maxX = Math.max(maxX, pos.x);
+            minY = Math.min(minY, pos.y);
+            maxY = Math.max(maxY, pos.y);
+        });
+        
+        // Añadir un pequeño margen
+        const margin = 50;
+        minX -= margin;
+        maxX += margin;
+        minY -= margin;
+        maxY += margin;
+        
+        // Usar las dimensiones reales del gráfico
+        const width = maxX - minX;
+        const height = maxY - minY;
+        
+        // Crear el SVG con las dimensiones reales
+        let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${width} ${height}">
+            <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#848484"/>
+                </marker>
+            </defs>
+            <rect x="${minX}" y="${minY}" width="${width}" height="${height}" fill="#121212"/>`;
+        
+        // Añadir las conexiones
+        allEdges.forEach(edge => {
+            const from = positions[edge.from];
+            const to = positions[edge.to];
+            
+            // Usar las posiciones reales sin transformación
+            const strokeWidth = Math.max(1, edge.value * 5);
+            const opacity = Math.max(0.2, edge.value);
+            
+            svg += `<line x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}" 
+                         stroke="#848484" stroke-width="${strokeWidth}" 
+                         opacity="${opacity}" marker-end="url(#arrowhead)"/>`;
+        });
+        
+        // Añadir los nodos
+        allNodes.forEach(node => {
+            const pos = positions[node.id];
+            const radius = 15;
+            
+            svg += `<circle cx="${pos.x}" cy="${pos.y}" r="${radius}" 
+                           fill="${node.color.background}" 
+                           stroke="${node.color.border}" 
+                           stroke-width="2"/>
+                   <text x="${pos.x}" y="${pos.y}" 
+                         text-anchor="middle" 
+                         dominant-baseline="middle" 
+                         fill="#000000" 
+                         font-family="arial" 
+                         font-size="16">${node.label}</text>`;
+        });
+        
+        svg += '</svg>';
+        
+        // Crear un blob y descargar
+        const blob = new Blob([svg], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'red-neuronal.svg';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+    } catch (error) {
+        console.error('Error al exportar SVG:', error);
+        alert('Error al exportar el gráfico. Por favor, intenta de nuevo.');
+    }
 }
