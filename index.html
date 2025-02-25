@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>o1234-NNG: Generador de Redes Neuronales de Palabras</title>
+    <title>Neural Network Generator</title>
+    <link rel="stylesheet" href="/src/css/style.css">
     <link rel="stylesheet" href="/src/styles/main.css">
     <!-- vis.js Network -->
     <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
@@ -30,8 +31,10 @@
                     <path d="M 80 50 Q 65 65, 50 80" stroke="white" fill="none" stroke-width="2"/>
                 </svg>
             </div>
-            <button class="btn" id="newGraphBtn">Nuevo</button>
-            <button class="btn" id="exportBtn">Exportar</button>
+            <button id="exportBtn" class="btn">Exportar</button>
+            <button id="newGraphBtn" class="btn">Nuevo</button>
+            <button id="saveAsBtn" class="btn">Guardar Como...</button>
+            <button id="openGraphBtn" class="btn">Abrir</button>
             <button class="btn" id="helpBtn">Ayuda</button>
         </nav>
 
@@ -61,6 +64,29 @@
                 </div>
             </div>
         </aside>
+
+        <!-- Panel de Gráficos Guardados -->
+        <div id="savedGraphsPanel" class="saved-graphs-panel hidden">
+            <div class="panel-header">
+                <h3>Gráficos Guardados</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="graphs-list">
+                <!-- Los gráficos se añadirán aquí dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Modal para Guardar Gráfico -->
+        <div id="saveGraphModal" class="modal hidden">
+            <div class="modal-content">
+                <h3>Guardar Gráfico</h3>
+                <input type="text" id="graphNameInput" placeholder="Nombre del gráfico">
+                <div class="modal-buttons">
+                    <button id="saveGraphBtn" class="btn">Guardar</button>
+                    <button class="btn cancel-btn">Cancelar</button>
+                </div>
+            </div>
+        </div>
     </div>
     <script type="module" src="/src/js/main.js"></script>
 </body>

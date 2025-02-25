@@ -93,6 +93,4 @@ Crear una aplicación web interactiva que permita a los usuarios generar y visua
 
 ## Habilidades técnicas necesarias
 - Manipulación avanzada de SVG
-- Gestión de eventos de interacción (arrastrar, soltar, clic)
-- Algoritmos básicos de visualización de grafos
 - Experiencia en diseño de interfaces intuitivas
