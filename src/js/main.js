@@ -400,8 +400,7 @@ function exportGraphAsSVG() {
                 <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
                     <polygon points="0 0, 10 3.5, 0 7" fill="#848484"/>
                 </marker>
-            </defs>
-            <rect x="${minX}" y="${minY}" width="${width}" height="${height}" fill="#121212"/>`;
+            </defs>`;
         
         // Añadir las conexiones
         allEdges.forEach(edge => {
@@ -439,15 +438,20 @@ function exportGraphAsSVG() {
                 }
             });
             
+            // Añadir un círculo blanco detrás del texto para mejorar legibilidad
             svg += `<circle cx="${pos.x}" cy="${pos.y}" r="${radius}" 
                            fill="${node.color.background}" 
                            stroke="${node.color.border}" 
                            stroke-width="2"/>
+                   <circle cx="${pos.x}" cy="${pos.y}" r="12" 
+                           fill="white" 
+                           opacity="0.7"/>
                    <text x="${pos.x}" y="${pos.y}" 
                          text-anchor="middle" 
                          dominant-baseline="middle" 
                          fill="#000000" 
                          font-family="arial" 
+                         font-weight="bold"
                          font-size="16">${label}</text>`;
         });
         
