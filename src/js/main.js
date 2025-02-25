@@ -59,12 +59,20 @@ const options = {
     groups: nodeGroups,
     physics: {
         enabled: true,
-        barnesHut: {
-            gravitationalConstant: -2000,
-            centralGravity: 0.3,
-            springLength: 95,
-            springConstant: 0.04,
-            damping: 0.09
+        solver: 'forceAtlas2Based',
+        forceAtlas2Based: {
+            gravitationalConstant: -10,
+            centralGravity: 0.01,
+            springLength: 90,
+            springConstant: 0.08,
+            damping: 0.4,
+            avoidOverlap: 0.4
+        },
+        stabilization: {
+            enabled: true,
+            iterations: 1000,
+            updateInterval: 50,
+            fit: true
         }
     },
     manipulation: {
