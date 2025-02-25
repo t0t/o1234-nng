@@ -1,13 +1,13 @@
 // Configuración inicial de la red
-const nodes = new vis.DataSet([
+const initialNodes = [
     { id: 'n0', label: '0', x: -100, y: 0, color: { background: '#ffffff', border: '#ffffff' }, font: { color: '#000000' } },
     { id: 'n1', label: '1', x: 0, y: 0, fixed: true, color: { background: '#ffeb3b', border: '#fdd835' }, font: { color: '#000000' } },
     { id: 'n2', label: '2', x: 100, y: 100, color: { background: '#e91e63', border: '#d81b60' }, font: { color: '#000000' } },
     { id: 'n3', label: '3', x: 0, y: -100, color: { background: '#2196f3', border: '#1e88e5' }, font: { color: '#000000' } },
     { id: 'n4', label: '4', x: 200, y: 0, color: { background: '#9e9e9e', border: '#757575' }, font: { color: '#000000' } }
-]);
+];
 
-const edges = new vis.DataSet([
+const initialEdges = [
     // Conexiones desde 0
     { from: 'n0', to: 'n1', value: 0.5 },
     { from: 'n0', to: 'n2', value: 0.3 },
@@ -23,7 +23,52 @@ const edges = new vis.DataSet([
     
     // Conexiones desde 3
     { from: 'n3', to: 'n4', value: 0.5 },
-]);
+];
+
+// Función para guardar el estado actual
+function saveNetworkState() {
+    const currentNodes = nodes.get();
+    const currentEdges = edges.get();
+    localStorage.setItem('networkNodes', JSON.stringify(currentNodes));
+    localStorage.setItem('networkEdges', JSON.stringify(currentEdges));
+}
+
+// Función para cargar el estado guardado
+function loadNetworkState() {
+    const savedNodes = localStorage.getItem('networkNodes');
+    const savedEdges = localStorage.getItem('networkEdges');
+    
+    if (savedNodes && savedEdges) {
+        nodes.clear();
+        edges.clear();
+        nodes.add(JSON.parse(savedNodes));
+        edges.add(JSON.parse(savedEdges));
+        return true;
+    }
+    return false;
+}
+
+// Función para crear un nuevo gráfico
+function createNewGraph() {
+    if (confirm('¿Estás seguro de que quieres crear un nuevo gráfico? Se perderán todos los cambios no guardados.')) {
+        nodes.clear();
+        edges.clear();
+        nodes.add(initialNodes);
+        edges.add(initialEdges);
+        network.fit();
+        saveNetworkState();
+    }
+}
+
+// Inicializar la red
+const nodes = new vis.DataSet();
+const edges = new vis.DataSet();
+
+// Cargar el estado guardado o usar el inicial
+if (!loadNetworkState()) {
+    nodes.add(initialNodes);
+    edges.add(initialEdges);
+}
 
 // Configuración de la red
 const options = {
@@ -331,3 +376,13 @@ deleteNodeBtn.addEventListener('click', function() {
         contextPanel.classList.add('hidden');
     }
 });
+
+// Event listeners para guardar cambios
+nodes.on('*', saveNetworkState);
+edges.on('*', saveNetworkState);
+
+// Botón nuevo gráfico
+const newGraphBtn = document.getElementById('newGraphBtn');
+if (newGraphBtn) {
+    newGraphBtn.addEventListener('click', createNewGraph);
+}
