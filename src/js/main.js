@@ -545,35 +545,5 @@ document.addEventListener('DOMContentLoaded', () => {
     if (exportBtn) {
         exportBtn.addEventListener('click', exportGraphAsSVG);
     }
-    
-    // Event listener para el botón de crear nodo
-    document.getElementById('createNodeBtn').addEventListener('click', () => {
-        const newNodeName = document.getElementById('newNodeName').value.trim();
-        if (newNodeName) {
-            const newId = 'n' + Date.now();
-            try {
-                nodes.add({
-                    id: newId,
-                    label: newNodeName,
-                    group: selectedNode ? nodes.get(selectedNode).group : 'group3'  // Heredar grupo del nodo padre o grupo 3 si es independiente
-                });
-                
-                // Si hay un nodo seleccionado, crear conexión
-                if (selectedNode) {
-                    edges.add({
-                        from: selectedNode,
-                        to: newId,
-                        value: parseFloat(document.getElementById('edgeWeight').value) || 0.5
-                    });
-                }
-                
-                // Limpiar campo y cerrar panel
-                document.getElementById('newNodeName').value = '';
-                document.getElementById('contextPanel').classList.add('hidden');
-                selectedNode = null;
-            } catch (error) {
-                console.error('Error al crear nodo:', error);
-            }
-        }
-    });
+
 });
