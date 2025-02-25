@@ -1,10 +1,10 @@
 // Configuración inicial de la red
 const initialNodes = [
-    { id: 'n0', label: '0', x: -100, y: 0, color: { background: '#ffffff', border: '#ffffff' }, font: { color: '#000000' } },
-    { id: 'n1', label: '1', x: 0, y: 0, fixed: true, color: { background: '#ffeb3b', border: '#fdd835' }, font: { color: '#000000' } },
-    { id: 'n2', label: '2', x: 100, y: 100, color: { background: '#e91e63', border: '#d81b60' }, font: { color: '#000000' } },
-    { id: 'n3', label: '3', x: 0, y: -100, color: { background: '#2196f3', border: '#1e88e5' }, font: { color: '#000000' } },
-    { id: 'n4', label: '4', x: 200, y: 0, color: { background: '#9e9e9e', border: '#757575' }, font: { color: '#000000' } }
+    { id: 'n0', label: '0', x: -100, y: 0, group: 'group0' },
+    { id: 'n1', label: '1', x: 0, y: 0, fixed: true, group: 'group1' },
+    { id: 'n2', label: '2', x: 100, y: 100, group: 'group2' },
+    { id: 'n3', label: '3', x: 0, y: -100, group: 'group3' },
+    { id: 'n4', label: '4', x: 200, y: 0, group: 'group4' }
 ];
 
 const initialEdges = [
@@ -24,6 +24,15 @@ const initialEdges = [
     // Conexiones desde 3
     { from: 'n3', to: 'n4', value: 0.5 },
 ];
+
+// Definición de grupos y colores
+const nodeGroups = {
+    group0: { color: { background: '#ffffff', border: '#ffffff' }, font: { color: '#000000' } },
+    group1: { color: { background: '#ffeb3b', border: '#fdd835' }, font: { color: '#000000' } },
+    group2: { color: { background: '#e91e63', border: '#d81b60' }, font: { color: '#000000' } },
+    group3: { color: { background: '#2196f3', border: '#1e88e5' }, font: { color: '#000000' } },
+    group4: { color: { background: '#9e9e9e', border: '#757575' }, font: { color: '#000000' } }
+};
 
 // Crear los datasets
 const nodes = new vis.DataSet(initialNodes);
@@ -47,6 +56,7 @@ const options = {
             type: 'continuous'
         }
     },
+    groups: nodeGroups,
     physics: {
         enabled: true,
         barnesHut: {
@@ -367,8 +377,8 @@ function exportGraphAsSVG() {
             });
             
             svg += `<circle cx="${pos.x}" cy="${pos.y}" r="${radius}" 
-                           fill="${node.color?.background || '#ffffff'}" 
-                           stroke="${node.color?.border || '#000000'}" 
+                           fill="${nodeGroups[node.group].color.background || '#ffffff'}" 
+                           stroke="${nodeGroups[node.group].color.border || '#000000'}" 
                            stroke-width="2"/>
                    <circle cx="${pos.x}" cy="${pos.y}" r="12" 
                            fill="white" 
@@ -506,8 +516,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 nodes.add({
                     id: newId,
                     label: newNodeName,
-                    color: { background: '#ffffff', border: '#ffffff' },
-                    font: { color: '#000000' }
+                    group: selectedNode ? nodes.get(selectedNode).group : 'group3'  // Heredar grupo del nodo padre o grupo 3 si es independiente
                 });
                 targetNodeId = newId;
             }
@@ -536,4 +545,5 @@ document.addEventListener('DOMContentLoaded', () => {
     if (exportBtn) {
         exportBtn.addEventListener('click', exportGraphAsSVG);
     }
+
 });
