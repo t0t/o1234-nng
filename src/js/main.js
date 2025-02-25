@@ -82,30 +82,18 @@ const options = {
         },
         borderWidth: 2,
         borderWidthSelected: 4,
-        color: {
-            background: '#4a4a4a',
-            border: '#6a6a6a',
-            highlight: {
-                background: '#6a6a6a',
-                border: '#8a8a8a'
-            }
-        }
+        shadow: true
     },
     edges: {
         width: 2,
         color: {
             color: '#848484',
-            highlight: '#a4a4a4'
-        },
-        scaling: {
-            min: 1,
-            max: 5,
-            label: {
-                enabled: true
-            }
+            highlight: '#848484',
+            hover: '#848484'
         },
         smooth: {
-            type: 'continuous'
+            type: 'continuous',
+            roundness: 0.5
         }
     },
     physics: {
@@ -113,16 +101,20 @@ const options = {
         barnesHut: {
             gravitationalConstant: -2000,
             centralGravity: 0.3,
-            springLength: 200,
-            springConstant: 0.04
+            springLength: 150,
+            springConstant: 0.04,
+            damping: 0.09
         },
         stabilization: {
-            iterations: 2500
+            enabled: true,
+            iterations: 1000,
+            updateInterval: 100
         }
     },
     interaction: {
         hover: true,
-        tooltipDelay: 200
+        navigationButtons: false,
+        keyboard: true
     }
 };
 
@@ -270,6 +262,7 @@ function getParentNodeColor(selectedNodeId) {
 function createNewConnection() {
     const selectedId = selectedNode;
     const newNodeName = newNodeNameInput.value.trim();
+    const weight = parseFloat(edgeWeightInput.value) || 0.5;
     
     if (!selectedId || !newNodeName) {
         alert('Selecciona un nodo y escribe un nombre para el nuevo nodo');
@@ -285,27 +278,31 @@ function createNewConnection() {
         } else {
             const allNodes = nodes.get();
             const newId = 'n' + allNodes.length;
-            const parentColor = getParentNodeColor(selectedId);
             
             const newNode = {
                 id: newId,
                 label: newNodeName,
-                color: parentColor,
+                color: getParentNodeColor(selectedId),
                 font: { color: '#000000' }
             };
             nodes.add(newNode);
             targetNodeId = newId;
         }
 
+        // Crear la conexión con el peso especificado
         const newEdge = {
             from: selectedId,
             to: targetNodeId,
-            value: parseFloat(edgeWeightInput.value) || 0.5
+            value: weight,
+            length: 200 * (1 - weight) // A mayor peso, conexión más corta
         };
         
         edges.add(newEdge);
-        network.fit();
+        
+        // Estabilizar la red después de añadir el nodo
+        network.stabilize(100);
         newNodeNameInput.value = '';
+        edgeWeightInput.value = '0.5'; // Resetear el peso al valor por defecto
         
     } catch (error) {
         console.error('Error al crear la conexión:', error);
@@ -363,12 +360,19 @@ function exportGraphAsSVG() {
         const allNodes = nodes.get();
         const allEdges = edges.get();
         
+        if (allNodes.length === 0) {
+            throw new Error('No hay nodos para exportar');
+        }
+        
         // Calcular los límites del gráfico
         let minX = Infinity, maxX = -Infinity;
         let minY = Infinity, maxY = -Infinity;
         
         allNodes.forEach(node => {
             const pos = positions[node.id];
+            if (!pos) {
+                throw new Error(`No se encontró la posición para el nodo ${node.id}`);
+            }
             minX = Math.min(minX, pos.x);
             maxX = Math.max(maxX, pos.x);
             minY = Math.min(minY, pos.y);
@@ -386,6 +390,10 @@ function exportGraphAsSVG() {
         const width = maxX - minX;
         const height = maxY - minY;
         
+        if (width <= 0 || height <= 0) {
+            throw new Error('Dimensiones del gráfico inválidas');
+        }
+        
         // Crear el SVG con las dimensiones reales
         let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${width} ${height}">
             <defs>
@@ -400,6 +408,11 @@ function exportGraphAsSVG() {
             const from = positions[edge.from];
             const to = positions[edge.to];
             
+            if (!from || !to) {
+                console.warn(`Saltando conexión ${edge.from}->${edge.to}: posiciones no encontradas`);
+                return;
+            }
+            
             // Usar las posiciones reales sin transformación
             const strokeWidth = Math.max(1, edge.value * 5);
             const opacity = Math.max(0.2, edge.value);
@@ -412,7 +425,19 @@ function exportGraphAsSVG() {
         // Añadir los nodos
         allNodes.forEach(node => {
             const pos = positions[node.id];
+            if (!pos) return;
+            
             const radius = 15;
+            const label = node.label.replace(/[<>&"']/g, c => {
+                switch (c) {
+                    case '<': return '&lt;';
+                    case '>': return '&gt;';
+                    case '&': return '&amp;';
+                    case '"': return '&quot;';
+                    case "'": return '&apos;';
+                    default: return c;
+                }
+            });
             
             svg += `<circle cx="${pos.x}" cy="${pos.y}" r="${radius}" 
                            fill="${node.color.background}" 
@@ -423,7 +448,7 @@ function exportGraphAsSVG() {
                          dominant-baseline="middle" 
                          fill="#000000" 
                          font-family="arial" 
-                         font-size="16">${node.label}</text>`;
+                         font-size="16">${label}</text>`;
         });
         
         svg += '</svg>';
@@ -437,10 +462,10 @@ function exportGraphAsSVG() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        URL.revokeObjectURL(url); // Liberar memoria
         
     } catch (error) {
-        console.error('Error al exportar SVG:', error);
+        console.error('Error al exportar el gráfico:', error);
         alert('Error al exportar el gráfico. Por favor, intenta de nuevo.');
     }
 }
